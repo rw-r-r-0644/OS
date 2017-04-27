@@ -1,6 +1,6 @@
 # OS Main Makefile
 
-OUTPUT		:= os.img
+OUTPUT		:= os.iso
 
 Q := @
 MAKEFLAGS	+= --no-print-directory
@@ -17,7 +17,7 @@ rebuild:
 	@for dir in $(TARGETS); do $(MAKE) -C $$dir rebuild; done
 	@echo "--> Generating $(OUTPUT)"
 	@cp kernel/kernel.elf isofs/boot/kernel.elf
-	@genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -quiet -o $(OUTPUT) isofs
+	@grub-mkrescue isofs -o $(OUTPUT)
 	@echo "--> Build finished"
 
 default:
@@ -25,7 +25,7 @@ default:
 	@for dir in $(TARGETS); do $(MAKE) -C $$dir default; done
 	@echo "--> Generating $(OUTPUT)"
 	@cp kernel/kernel.elf isofs/boot/kernel.elf
-	@genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -quiet -o $(OUTPUT) isofs
+	@grub-mkrescue isofs -o $(OUTPUT)
 	@echo "--> Build finished"
 
 clean:
@@ -39,7 +39,7 @@ debug:
 	@for dir in $(TARGETS); do $(MAKE) -C $$dir debug; done
 	@echo "--> Generating $(OUTPUT)"
 	@cp kernel/kernel.elf isofs/boot/kernel.elf
-	@genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -quiet -o $(OUTPUT) isofs
+	@grub-mkrescue isofs -o $(OUTPUT)
 	@echo "--> Build finished"
 	@echo "--> Starting emulator and debugger"
 	@qemu-system-i386 -s -cdrom $(OUTPUT) -d guest_errors,int &

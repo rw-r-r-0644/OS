@@ -126,7 +126,7 @@ void user_input(char *input) {
 			float c = a - b;
 			if (c != 0.25f)
 				printf("uhmmmm...\n");
-			printf("%08x", c);
+			printf("%08x\n", c);
 		cmd("smash stack")
 			char break_me[16];
 			char evil[20];

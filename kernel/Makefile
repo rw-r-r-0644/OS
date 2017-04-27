@@ -30,6 +30,7 @@ INCLUDES	:=	-I include \
 # Build flags
 CFLAGS		:=	-g -m32 \
 				-ffreestanding -fstack-protector -fno-exceptions \
+				-std=gnu11 \
 				-Wall -Wextra -Wno-unused ${INCLUDES}
 
 # Rebuild by default

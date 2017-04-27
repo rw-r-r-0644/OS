@@ -28,6 +28,7 @@ INCLUDES	:=	-I ../kernel/include \
 # Build flags
 CFLAGS		:=	-g -m32 \
 				-ffreestanding -fno-exceptions \
+				-std=gnu11 \
 				-Wall -Wextra  $(INCLUDES)
 
 CFLAGS_LIBK	:= $(CFLAGS) -D__is_libk

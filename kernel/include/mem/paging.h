@@ -29,5 +29,8 @@ int page_set_attrib(u32* pd, void* address, u32 attrib);
 // Get physical address from virtual address
 void* get_physaddr(u32* pd, void* virtualaddr);
 
+// Identity map some memory
+void identity_map(u32* pd, void * start_addr, void * end_addr, u32 attr);
+
 // Initialize paging
 void paging_init();

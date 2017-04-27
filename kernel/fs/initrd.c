@@ -36,7 +36,7 @@ fs_node_t * initrd_dev;				// Directory node for /dev
 fs_node_t * root_nodes;				// List of file nodes
 u32 nroot_nodes;					// Number of file nodes
 
-fs_node_t * initrd_init(u8 * buff)
+fs_node_t * initrd_mount(fs_node_t** mount_path, u8 * buff)
 {
 	// Let's hope the kernel didn't get hacked/messed that early and just skip checks...
 	initrd_header		= (initrd_header_t *)buff;
@@ -71,6 +71,7 @@ fs_node_t * initrd_init(u8 * buff)
 		root_nodes[i].read = &initrd_read;
 	}
 	
+	*mount_path = initrd_root;
 	return initrd_root;
 }
 

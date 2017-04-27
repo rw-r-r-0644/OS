@@ -136,7 +136,6 @@ void* get_physaddr(u32* pd, void* virtualaddr)
 		return 0;
 }
 
-
 void enable_paging()
 {
 	// Enable paging by oring cr0 with pagin enable bit

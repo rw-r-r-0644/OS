@@ -127,8 +127,7 @@ char *exception_messages[] =
 
 void isr_handler(registers_t *r)
 {
-	// BSOD ;D
-	
+	// BSOD irs template
 	vga_color_t bsod = {VGA_COLOR_LIGHT_BLUE, VGA_COLOR_WHITE};
 	tty_set_color(bsod);
 	
@@ -142,16 +141,36 @@ void isr_handler(registers_t *r)
 	
 	// Technical informations
 	printf("Technical informations:\n");
-	printf("EXCEPTION:  %08X\n", r->int_no);
-	printf("ERROR_CODE: %08X\n", r->err_code);
 	
-	// Registers dump
-	printf("REGISTERS:\n");
-	printf("ds =%08X edi=%08X esi=%08X ebp=%08X\nebx=%08X edx=%08X ecx=%08X eax=%08X\neip=%08X cs =%08X flg=%08X esp=%08X\nss =%08X\n",
-			r->ds,  r->edi, r->esi,    r->ebp,
-			r->ebx, r->edx, r->ecx,    r->eax,
-			r->eip, r->cs,  r->eflags, r->esp,
-			r->ss);
+	switch(r->int_no)
+	{
+		case 14: ; // Page fault
+			u32 faulting_address;
+			asm volatile("mov %%cr2, %0" : "=r" (faulting_address)); // the faulting address is stored in CR2
+			
+			// Print exception additional informations
+			printf("page fault info:\n");
+			printf("address:  0x%X\n", faulting_address);
+			printf("present:  %u\n", r->err_code & 0x1);	// Page not present
+			printf("rw:       %u\n", r->err_code & 0x2);	// Write operation?
+			printf("user:     %u\n", r->err_code & 0x4);	// Processor was in user-mode?
+			printf("reserved: %u\n", r->err_code & 0x8);	// Overwritten CPU-reserved bits of page entry?
+			printf("id:       %u\n", r->err_code & 0x10);	// Caused by an instruction fetch?
+			break;
+		
+		default: ; // Generic exception
+			printf("EXCEPTION:  %08X\n", r->int_no);
+			printf("ERROR_CODE: %08X\n", r->err_code);
+			
+			// Registers dump
+			printf("REGISTERS:\n");
+			printf("ds =%08X edi=%08X esi=%08X ebp=%08X\nebx=%08X edx=%08X ecx=%08X eax=%08X\neip=%08X cs =%08X flg=%08X esp=%08X\nss =%08X\n",
+					r->ds,  r->edi, r->esi,    r->ebp,
+					r->ebx, r->edx, r->ecx,    r->eax,
+					r->eip, r->cs,  r->eflags, r->esp,
+					r->ss);
+			break;
+	}
 			
 	// Stop the cpu
 	for(;;);

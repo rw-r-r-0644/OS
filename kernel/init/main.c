@@ -17,7 +17,8 @@
 #include <mem/page_frame.h>
 #include <mem/heap.h>
 
-#include <multiboot/multiboot.h>
+#include <mboot/mboot.h>
+#include <mboot/mboot_mods.h>
 
 #include <fs/fs.h>
 #include <fs/initrd.h>
@@ -69,10 +70,11 @@ void kernel_main()
 	// Enable IRQs
 	sti();
 	
-	// Mount initial filesystem
-	multiboot_module_t * initrd_m = (multiboot_module_t *)mbinfo->mods_addr;
-	printf("initrd start: %08x, end: %08x", initrd_m->mod_start, initrd_m->mod_end);
-	//initrd_init(initrd_m->mod_start);
+	// Map multiboot modules
+	mboot_map_mods(mbinfo);
+	
+	// Mount initial filesystem!
+	initrd_mount(&fs_root, mboot_modules[0]);
 	
 	// Kernel welcome message
 	printf( "\n\nOS KERNEL\n" \
@@ -82,7 +84,7 @@ void kernel_main()
 	puts("\n\n> ");
 }
 
-// That's some bad temporary shell there... TODO: Remove this horrible code
+// That's some bad temporary shell there, used for testing... TODO: Remove this horrible code
 #define cmd_start if(!1){
 #define cmd(str) }else if(strcmp(input,str)==0){
 #define cmd_arg(str) }else if(memcmp(input,str,strlen(str))==0){
@@ -108,7 +110,6 @@ void user_input(char *input) {
 			printf("d=%d e=%d\n", d, e);
 		cmd("lspci")
 			pci_check_all_busses();
-			puts("\n");
 		cmd("info")
 			printf("\nOS KERNEL\n");
 			printf("Built on %s %s\n", __TIME__, __DATE__);
@@ -167,6 +168,16 @@ void user_input(char *input) {
 			
 			u32 score = t2 - t1;
 			printf("time: %u\n", score);
+		cmd("initrd")
+			// list the contents of /
+			int i = 0;
+			struct dirent *node = 0;
+			while ( (node = readdir_fs(fs_root, i)) != 0)
+			{
+				fs_node_t *fsnode = finddir_fs(fs_root, node->d_name);
+				printf("/%s%c\n", node->d_name, (fsnode->flags & FS_DIRECTORY) ? '/' : ' ');
+				i++;
+			}
 
 		cmd("bootinfo")
 			printf("Booted by: %s\n", mbinfo->boot_loader_name);

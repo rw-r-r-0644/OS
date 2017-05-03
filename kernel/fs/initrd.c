@@ -37,30 +37,30 @@ fs_node_t * root_nodes;				// List of file nodes
 u32 nroot_nodes;					// Number of file nodes
 
 fs_node_t * initrd_mount(fs_node_t** mount_path, u8 * buff)
-{
+{	
 	// Let's hope the kernel didn't get hacked/messed that early and just skip checks...
 	initrd_header		= (initrd_header_t *)buff;
 	initrd_descs		= (initrd_file_desc_t *)((u32)buff + sizeof(initrd_header_t));
 	initrd_file_area	= (u8 *)((u32)buff + sizeof(initrd_header_t) + (sizeof(initrd_file_desc_t) * initrd_header->entry_count)); 
-	
+		
 	// Initialise the root directory
 	initrd_root = calloc(1, sizeof(fs_node_t));
 	strcpy(initrd_root->name, "initrd");
 	initrd_root->flags = FS_DIRECTORY;
 	initrd_root->readdir = &initrd_readdir;
 	initrd_root->finddir = &initrd_finddir;
-	
+		
 	// Initialise the /dev directory
 	initrd_dev = calloc(1, sizeof(fs_node_t));
 	strcpy(initrd_dev->name, "dev");
 	initrd_dev->flags = FS_DIRECTORY;
 	initrd_dev->readdir = &initrd_readdir;
 	initrd_dev->finddir = &initrd_finddir;
-	
+		
 	// Create file nodes
 	nroot_nodes = initrd_header->entry_count;
 	root_nodes = calloc(1, sizeof(fs_node_t) * nroot_nodes);
-	
+		
 	for (u32 i = 0; i < nroot_nodes; i++)
 	{
 		// Create a new file node
@@ -70,7 +70,7 @@ fs_node_t * initrd_mount(fs_node_t** mount_path, u8 * buff)
 		root_nodes[i].flags = FS_FILE;
 		root_nodes[i].read = &initrd_read;
 	}
-	
+		
 	*mount_path = initrd_root;
 	return initrd_root;
 }

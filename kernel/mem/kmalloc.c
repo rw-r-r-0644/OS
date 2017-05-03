@@ -3,7 +3,7 @@
 /*
  * This should be computed at link time, but an hardcoded
  * value is fine for now. Remember that our kernel starts
- * at 0x1000 as defined on the Makefile
+ * at 1M as defined on the Makefile
 */
 
 u32 placement_address = 0x10000;

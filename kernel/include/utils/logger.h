@@ -15,7 +15,7 @@ typedef enum
 #define LOG_ENABLED 1
 
 // Minimum log level
-#define LOG_LEVEL LOG_INFO
+#define LOG_LEVEL LOG_DEBUG
 
 #ifdef LOG_ENABLED
 

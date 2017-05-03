@@ -32,13 +32,9 @@
 
 #include <utils/logger.h>
 
-multiboot_info_t * mbinfo;
-
 /* early kernel entrypoint */
-void kernel_early(u32 mbinfo_ptr)
-{
-	mbinfo = (multiboot_info_t * )mbinfo_ptr;
-	
+void kernel_early()
+{	
 	// Initialize tty so we get logging
 	tty_init();
 	
@@ -74,7 +70,7 @@ void kernel_main()
 	mboot_map_mods(mbinfo);
 	
 	// Mount initial filesystem!
-	initrd_mount(&fs_root, mboot_modules[0]);
+	//initrd_mount(&fs_root, mboot_modules[0]);
 	
 	// Kernel welcome message
 	printf( "\n\nOS KERNEL\n" \

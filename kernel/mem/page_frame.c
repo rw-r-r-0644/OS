@@ -49,8 +49,9 @@ void pageframe_init(u32 mem_size)
 {
 	log_printf(LOG_INFO, "Initializing, mem size = %u Mib", mem_size / 1024);
 	
-	frame_size = mem_size / 0x1000;     /* 4k blocks */
-	frame_mem  = kmalloc(frame_size / 8 /* blocks are 1 bit and kmalloc allocates siz3 in bytes */, false, NULL);
+	frame_size = mem_size / 4;     /* 4k blocks */
+	log_printf(LOG_WARNING, "Allocating %u bytes of memory", frame_size / 8);
+	frame_mem  = kmalloc(frame_size / 8 /* blocks are 1 bit and kmalloc allocates size in bytes */, false, NULL);
 	memset(frame_mem, 0, frame_size / 8);
 	
 	log_printf(LOG_DEBUG, "frame_size = %u, frame = 0x%08x", frame_size, frame_mem);

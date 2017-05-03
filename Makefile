@@ -42,7 +42,7 @@ debug:
 	@grub-mkrescue isofs -o $(OUTPUT)
 	@echo "--> Build finished"
 	@echo "--> Starting emulator and debugger"
-	@qemu-system-i386 -s -cdrom $(OUTPUT) -d guest_errors,int &
+	@qemu-system-i386 -s -cdrom $(OUTPUT) -m 512M -d guest_errors,int &
 	@$(GDB) -ex "target remote localhost:1234" -ex "symbol-file kernel/kernel.elf"
 
 run: rebuild

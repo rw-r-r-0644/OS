@@ -2,6 +2,7 @@
 #include <mem/kmalloc.h>
 
 #include <utils/common.h>
+#include <utils/logger.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -156,6 +157,7 @@ void paging_init()
 	kernel_pd = create_pd();
 	
 	// Identity map the kernel
+	log_printf(LOG_DEBUG, "Mapping the kernel; start: 0x%p, end: 0x%p", &kernel_start, &kernel_end);
 	identity_map(kernel_pd, 0, &kernel_end, 3);
 	
 	// Switch to kernel's page directory

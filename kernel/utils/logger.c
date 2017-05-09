@@ -32,9 +32,6 @@ void log_init()
 char log_buf[255];
 void __log_printf(char * module_name, log_level_t level, char * fmt, ...)
 {
-	if (level < LOG_LEVEL)
-		return;
-	
 	// Remove file path from module name
 	char * p;
 	for(;;)

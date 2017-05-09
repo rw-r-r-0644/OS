@@ -17,7 +17,7 @@ typedef enum
 // Minimum log level
 #define LOG_LEVEL LOG_DEBUG
 
-#ifdef LOG_ENABLED
+#if LOG_ENABLED == 1
 
 void log_init();
 
@@ -29,6 +29,30 @@ void log_init();
  */
 void __log_printf(char * module_name, log_level_t level, char * fmt, ...);
 #define log_printf(l, x, ...) __log_printf(__FILE__ , l, x,  ##__VA_ARGS__)
+
+#if LOG_ERROR < LOG_LEVEL
+#define log_error(x, ...)
+#else
+#define log_error(x, ...) log_printf(LOG_ERROR, x, ##__VA_ARGS__)
+#endif
+
+#if LOG_WARNING < LOG_LEVEL
+#define log_warning(x, ...)
+#else
+#define log_warning(x, ...) log_printf(LOG_WARNING, x, ##__VA_ARGS__)
+#endif
+
+#if LOG_INFO < LOG_LEVEL
+#define log_info(x, ...)
+#else
+#define log_info(x, ...) log_printf(LOG_INFO, x, ##__VA_ARGS__)
+#endif
+
+#if LOG_DEBUG < LOG_LEVEL
+#define log_debug(x, ...)
+#else
+#define log_debug(x, ...) log_printf(LOG_DEBUG, x, ##__VA_ARGS__)
+#endif
 
 #else
 

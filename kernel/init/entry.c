@@ -9,13 +9,14 @@ extern void kernel_main();
 #define STACK_BOTTOM	&stack[0]
 #define STACK_TOP		&stack[STACK_SIZE]
 
-u8 stack[STACK_SIZE] __attribute__((aligned(4))) = {0};
+const u8 stack[STACK_SIZE] __attribute__((aligned(8))) = {0};
 
 /* Entrypoint */
 void entrypoint()
 {
 	// Setup the stack
-	asm volatile("movl %0, %%esp"::"r"(STACK_TOP));
+	asm volatile("movl %0, %%ebp"    :: "r"(STACK_TOP));
+	asm volatile("movl %%ebp, %%esp" ::);
 	
 	// Get multiboot info
 	asm volatile("movl %%ebx, %0":"=r"(mbinfo));

@@ -99,7 +99,9 @@ void * heap_alloc(heap_t * heap, u32 size)
 		return NULL;
 	
 	heap_header_t * h;
-	for (u32 i = heap->start; i < (heap->end - sizeof(heap_header_t)); i++)
+	
+	u32 i = heap->start;
+	while (i < (heap->end - sizeof(heap_header_t)))
 	{
 		h = (heap_header_t *)i;
 		if (h->magic == MAGIC)	// Valid header
@@ -128,11 +130,13 @@ void * heap_alloc(heap_t * heap, u32 size)
 					return (void *)h->mem;
 				}
 			}
-			else
-			{
-				// That's a valid header, go faster
-				i += h->size;
-			}
+
+			// That's a valid header, go faster
+			i += h->size;
+		}
+		else
+		{
+			i++;
 		}
 	}
 	return NULL;

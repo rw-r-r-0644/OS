@@ -1,5 +1,6 @@
 #include <mem/kmalloc.h>
 #include <utils/logger.h>
+#include <string.h>
 
 /*
  * This should be computed at link time, but an hardcoded
@@ -27,4 +28,9 @@ void *kmalloc(size_t size, bool align, u32 *phys_addr)
     placement_address += size; // Increment the free memory pointer
 	
     return (void *)ret;
+}
+
+void *kcalloc(size_t size, bool align, u32 *phys_addr)
+{
+	return memset(kmalloc(size, align, phys_addr), 0, size);
 }

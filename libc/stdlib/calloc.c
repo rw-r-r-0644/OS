@@ -8,9 +8,7 @@
 void * calloc(size_t num, size_t size)
 {
 #if defined(__is_libk)
-	void * buff = heap_alloc(&kernel_heap, num * size);
-	memset(buff, 0, num * size);
-	return buff;
+	return memset(heap_alloc(&kernel_heap, num * size), 0, num * size);
 #else
 	// Not implemented yet.
 	num = num;

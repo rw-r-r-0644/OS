@@ -2,7 +2,8 @@
 
 void * memset (void *s, int c, size_t n)
 {
+	u8* m = (u8*)s;
 	while (n--)
-		*((u8 *)s++) = (u8)c;
+		*(m++) = (u8)c;
 	return s;
 }

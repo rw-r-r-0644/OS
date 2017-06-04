@@ -96,14 +96,6 @@ void user_input(char *input) {
 			u32* page = kmalloc(1000, true, &phys_addr);
 			printf("Allocated a page\n");
 			printf("Page: %08x, Physical Address: %08x\n", page, phys_addr);
-		cmd("memcmp")
-			printf("memcmp\n");
-			char a[] = {1,2,3};
-			char b[] = {1,2,3,1,1};
-			char c[] = {1,2,3,4,5};
-			int d = memcmp(a, b, sizeof(a) / sizeof(a[0]));
-			int e = memcmp(b, c, sizeof(b) / sizeof(b[0]));
-			printf("d=%d e=%d\n", d, e);
 		cmd("lspci")
 			pci_check_all_busses();
 		cmd("info")

@@ -99,8 +99,4 @@ void pageframe_init(u32 mem_size)
 		}
 		
 	}
-		
-	//u32 mmap_length;
-	//u32 mmap_addr;
-	
 }

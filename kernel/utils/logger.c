@@ -49,8 +49,8 @@ void __log_printf(char * module_name, log_level_t level, char * fmt, ...)
 	}
 	
 	// Remove the dot
-	p = strrchr(module_name, '.');
-	*p = 0;
+	if((p = strrchr(module_name, '.')) != NULL)
+		*p = 0;
 	
 	// Do actual print
 	printf("%c: %s: ", level_c[level], module_name);

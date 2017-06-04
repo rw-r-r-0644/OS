@@ -8,18 +8,47 @@
 #include <stdint.h>
 #include <string.h>
 
-u32* create_pd()
-{
-	u32* pd;
-	kmalloc(4096, true, (u32*)&pd);
-	memset(pd, 0, 4096);
-	return pd;
-}
-
 void switch_pd(u32* pd)
 {
 	asm volatile("mov %0, %%cr3":: "r"(pd));
 }
+/*
+u32* clone_pt(u32* old_pt)
+{
+	u32* new_pt = create_pt();
+
+	for (int i = 0; i < 1024; i++)
+	{
+		if (old_pt[i] & 0x1)
+			continue;
+	}
+}
+
+u32* clone_pd(u32* old_pd)
+{
+	log_info("Staring pagedir copy");
+	
+	u32* new_pd;
+	kcalloc(4096, true, &new_pd);
+	
+	// Add base entries from kernel's pd
+	for (int i = 0; i < 1024; i++)
+	{
+		// Only copy the page table if it's in memory
+		if (old_pd[i] & 0x1)
+		{
+			if (kernel_pd[i] == old_pd[i])	// Use the same pointer
+				new_pd[i] = old_pd[i];
+			else							// Copy the table
+				new_pd[i] = (u32)clone_pt(old_pd[i] & 0xFFFFF000) & 0x3;
+				
+			//new_pd[i] = (kernel_pd[i] == old_pd[i]) ? old_pd[i] : (clone_pt(old_pd[i] & 0xFFFFF000) & 0x3);
+		}
+	}
+	
+	return new_pd;
+}
+*/
 
 // Sometimes it may be needed...
 void invlpg(u32 addr)
@@ -32,12 +61,11 @@ int map_page(u32* pd, void* physaddr, void* virtualaddr, u32 attrib)
 	u32 pdindex = (u32)virtualaddr >> 22;
 	u32 ptindex = (u32)virtualaddr >> 12 & 0x03FF;
 
-	u32* pt = (u32*)((pd[pdindex] >> 12) * 0x1000);
+	u32* pt = (u32*)(pd[pdindex] & 0xFFFFF000);
 	if (!pt)
 	{
 		// Create the page table
-		kmalloc(4096, true, (u32*)&pt);	// 4kb aligned, physical
-		memset(pt, 0, 4096);			// init the page table to 0
+		kcalloc(4096, true, (u32*)&pt);	// 4kb aligned, physical
 		
 		// Add the page table to the page directory
 		pd[pdindex] = (u32)pt | 3;		// Supervisor, rw, present
@@ -78,7 +106,7 @@ int unmap_page(u32* pd, void* virtualaddr)
 	u32 pdindex = (u32)virtualaddr >> 22;
 	u32 ptindex = (u32)virtualaddr >> 12 & 0x03FF;
 	
-	u32* pt = (u32*)((pd[pdindex] >> 12) * 0x1000);
+	u32* pt = (u32*)(pd[pdindex] & 0xFFFFF000);
 	if (!pt) // It the page table doesn't exist, the page must already be unmapped
 		return -1;
 	
@@ -113,7 +141,7 @@ int page_set_attrib(u32* pd, void* address, u32 attrib)
 	u32 pdindex = (u32)address >> 22;
 	u32 ptindex = (u32)address >> 12 & 0x03FF;
 
-	u32* pt = (u32*)((pd[pdindex] >> 12) * 0x1000);
+	u32* pt = (u32*)(pd[pdindex] & 0xFFFFF000);
 	if (!pt)
 		return -1;
  	
@@ -126,7 +154,7 @@ void* get_physaddr(u32* pd, void* virtualaddr)
 	u32 pdindex = (u32)virtualaddr >> 22;
 	u32 ptindex = (u32)virtualaddr >> 12 & 0x03FF;
 
-	u32* pt = (u32*)((pd[pdindex] >> 12) * 0x1000);
+	u32* pt = (u32*)(pd[pdindex] & 0xFFFFF000);
 	if (!pt)
 		return 0;
 
@@ -154,7 +182,7 @@ void identity_map(u32* pd, void * start_addr, void * end_addr, u32 attr)
 void paging_init()
 {	
 	// Create kernel's page directory
-	kernel_pd = create_pd();
+	kcalloc(4096, true, &kernel_pd);
 	
 	// Identity map the kernel
 	log_printf(LOG_DEBUG, "Mapping the kernel; start: 0x%p, end: 0x%p", &kernel_start, &kernel_end);

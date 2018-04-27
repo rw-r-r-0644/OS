@@ -1,41 +1,32 @@
-/* Define the entry point */
-ENTRY(entrypoint)
+ENTRY(_loader)
+OUTPUT_FORMAT(elf32-i386)
 
-/* Tell where the various sections of the object files will be put in the final
-   kernel image. */
+/* The kernel will live at 3GB + 1MB in the virtual
+ * address space, which will be mapped to 1MB in the
+ * physical address space. */
+
 SECTIONS
 {
-	/* The Multiboot bootloader should load the kernel at 1Mib */
-	. = 1M;
+	. = 0xC0100000;
 	p_kernel_start = .;
 
-	/* Align multiboot info and text to 4Kb */
-	.text BLOCK(4K) : ALIGN(4K)
+	.text ALIGN(4K) : AT(ADDR(.text) - 0xC0000000)
 	{
 		*(.multiboot)
 		*(.text)
+		*(.rodata*)
 	}
 
-	/* Read-only data. */
-	.rodata BLOCK(4K) : ALIGN(4K)
-	{
-		*(.rodata)
-	}
-
-	/* Read-write data (initialized) */
-	.data BLOCK(4K) : ALIGN(4K)
+	.data ALIGN(4K) : AT(ADDR(.data) - 0xC0000000)
 	{
 		*(.data)
 	}
 
-	/* Read-write data (uninitialized) and stack */
-	.bss BLOCK(4K) : ALIGN(4K)
+	.bss ALIGN(4K) : AT(ADDR(.bss) - 0xC0000000)
 	{
 		*(COMMON)
 		*(.bss)
 	}
-
-	/* Other sections wil leventually be put here */
 	
 	p_kernel_end = .;
 }

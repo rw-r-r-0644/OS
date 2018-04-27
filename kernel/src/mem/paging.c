@@ -10,8 +10,6 @@
 #include <lib/stdint.h>
 #include <lib/string.h>
 
-u32* kernel_pd;
-
 void switch_pd(u32* pd)
 {
 	asm volatile("mov %0, %%cr3":: "r"(pd));

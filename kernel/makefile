@@ -3,6 +3,7 @@
 Q := @
 MAKEFLAGS += --no-print-directory
 
+ROOTFS		?= .
 TARGET		:= $(ROOTFS)/boot/kernel
 
 # Compiler settings

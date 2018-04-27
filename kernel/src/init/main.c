@@ -36,11 +36,7 @@
 /* early kernel entrypoint */
 void kernel_early()
 {
-	// Setup the gdt
-	gdt_init();
-	
-	// Intialize ISR handlers
-	isr_init();
+	tty_print("hello world");
 	
 	// Initialize memory management
 	mm_init();

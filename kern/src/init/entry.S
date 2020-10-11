@@ -69,13 +69,9 @@
 		# get kernel size (ecx = kernel size)
 		movl $(__kernel_end - KERNEL_VIRT_BASE),%ecx
 
-		# align kernel size if needed (ecx = kernel size, edx = size % 0x400000)
-		movl %ecx,%edx
-		andl $0x3FFFFF,%edx
-		cmpl $0,%edx
-		je _loader.compute_save_pg_count
-		subl %edx,%ecx
-		addl $0x400000,%ecx
+		# align kernel size to 4Mib boundrary
+		addl $0x3FFFFF,%ecx
+		andl $0xFFC00000,%ecx
 
 	# compute the number of needed pages and save them in esi for later
 	_loader.compute_save_pg_count:

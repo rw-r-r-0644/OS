@@ -3,8 +3,8 @@
 .extern enable_isrs
 .extern enable_irqs
 
-.extern p_kernel_start
-.extern p_kernel_end
+.extern __kernel_start
+.extern __kernel_end
 
 .section .multiboot
     # multiboot header
@@ -67,7 +67,7 @@
 	# compute page aligned kernel size
     _loader.get_kern_size_pgalign:
         # get kernel size (ecx = kernel size)
-        movl $(p_kernel_end - KERNEL_VIRT_BASE),%ecx
+        movl $(__kernel_end - KERNEL_VIRT_BASE),%ecx
 
         # align kernel size if needed (ecx = kernel size, edx = size % 0x400000)
         movl %ecx,%edx

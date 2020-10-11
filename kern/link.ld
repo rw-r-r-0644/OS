@@ -8,7 +8,7 @@ OUTPUT_FORMAT(elf32-i386)
 SECTIONS
 {
 	. = 0xC0100000;
-	p_kernel_start = .;
+	__kernel_start = .;
 
 	.text ALIGN(4K) : AT(ADDR(.text) - 0xC0000000)
 	{
@@ -27,6 +27,6 @@ SECTIONS
 		*(COMMON)
 		*(.bss)
 	}
-	
-	p_kernel_end = .;
+
+	__kernel_end = .;
 }

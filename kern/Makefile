@@ -32,6 +32,8 @@ CFLAGS		:=	-g -m32 \
 				-std=gnu11 \
 				-Wall -Wextra -Wno-unused ${INCLUDES}
 
+ASFLAGS		:=	-g -m32 $(INCLUDES)
+
 # Rebuild by default
 rebuild: clean default
 
@@ -63,11 +65,11 @@ $(BUILD)/%.c.o: $(SOURCE)/%.c
 
 $(BUILD)/%.S.o: $(SOURCE)/%.S
 	$(info AS $@)
-	@$(CC) -c $< -o $@
+	@$(CC) $(ASFLAGS) -c $< -o $@
 
 $(BUILD)/%.s.o: $(SOURCE)/%.s
 	$(info NASM $@)
-	@$(AS) $< -f elf -o $@
+	@$(AS) $(ASFLAGS) $< -f elf -o $@
 
 clean:
 	$(info -> Cleaning kernel)

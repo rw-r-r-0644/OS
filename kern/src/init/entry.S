@@ -1,20 +1,9 @@
-
 .extern kern_main
 .extern enable_isrs
 .extern enable_irqs
 
 .extern __kernel_start
 .extern __kernel_end
-
-.section .multiboot
-	# multiboot header
-	.equ MULTIBOOT_MAGIC,    0x1BADB002                             # magic number
-	.equ MULTIBOOT_FLAGS,    (0x1 | 0x2)                            # flags  (0x1: align modules, 0x2: provide memory map)
-	.equ MULTIBOOT_CHECKSUM, -(MULTIBOOT_MAGIC + MULTIBOOT_FLAGS)   # checksum
-	.align 4
-	.long MULTIBOOT_MAGIC
-	.long MULTIBOOT_FLAGS
-	.long MULTIBOOT_CHECKSUM
 
 .section .bss
 	# stack

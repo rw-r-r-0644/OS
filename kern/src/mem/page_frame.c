@@ -75,9 +75,9 @@ void pageframe_init(uint32_t mem_size)
 	set_frames(0x0, kernel_end, FRAME_SET);
 	log_debug("set kernel physical memory as allocated");
 
-	// Set the heap memory as used
+/*	// Set the heap memory as used
 	set_frames(heap_start, heap_end, FRAME_SET);
-	log_debug("set heap physical memory as allocated");
+	log_debug("set heap physical memory as allocated");*/
 	
 	// Check if the bootloader kindly provides us with a memory map
 /*	if (mbinfo->flags & MULTIBOOT_INFO_MEM_MAP)

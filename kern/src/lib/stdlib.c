@@ -32,8 +32,24 @@ int atoi (const char * s)
 	return sign * res;
 }
 
+void * malloc(size_t size)
+{
+	return heapalloc(size);
+}
+
+void free(void *ptr)
+{
+	return heapfree(ptr);
+}
+
 void * calloc(size_t num, size_t size)
 {
 	size_t nbytes = num * size;
-	return memset(malloc(nbytes), 0, nbytes);
+	void * ptr;
+
+	ptr = malloc(nbytes);
+	if (ptr)
+		memset(ptr, 0, nbytes);
+
+	return ptr;
 }

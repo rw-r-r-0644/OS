@@ -1,121 +1,138 @@
 /*
  * heap.c
- * Kernel heap
+ *
+ * Kernel memory heap.
+ * Based on the K&R heap implementation.
  */
-
 #include <mem/heap.h>
-#include <mem/paging.h>
-#include <mem/kmalloc.h>
-#include <mem/page_frame.h>
-
 #include <lib/stdint.h>
-#include <lib/stdbool.h>
 #include <lib/utils.h>
+#include <utils/deadlock.h>
+#include <stdio.h>
 
-#include <utils/logger.h>
 
-typedef struct _blkhdr {
-	struct _blkhdr * ptr; /* next free block */
-	unsigned size; /* size of this block */
-} _packed blkhdr_t;
-
-static blkhdr_t base; /* empty list to get started */
-static blkhdr_t *freep = NULL; /* start of free list */
-
-uintptr_t heap_start;
-uintptr_t heap_end;
-
-#define NALLOC 1024 /* minimum #units to request */
-
-/* morecore: ask system for more memory */
-static blkhdr_t* morecore(unsigned nu)
+/* block header */
+typedef struct blkhdr blkhdr;
+struct blkhdr
 {
-    if (nu < NALLOC)
-        nu = NALLOC;
-    blkhdr_t* up = (blkhdr_t *)kmalloc(nu * sizeof(blkhdr_t), false);
-    up->size = nu;
-    free((void *)(up+1));
-    return freep;
+	/* next free block */
+	blkhdr *ptr;
+
+	/* size of this block */
+	unsigned int size;
+} _packed;
+
+
+/* initial base block */
+static blkhdr base = { &base, 0 };
+
+/* free block list */
+static blkhdr *freep = &base;
+
+
+/* heapexpand
+ *   nu: the number of heap blocks to allocate
+ *
+ * Allocates more virtual kernel memory for the heap.
+ */
+static blkhdr *
+heapexpand(unsigned int nu)
+{
+	printf("heapexpand: error: unimplemented.\n");
+	deadlock();
 }
 
-/* morecore: ask system for more memory
-static blkhdr_t* morecore(unsigned nu)
+
+/* heapalloc
+ *   size: the amount of memory to allocate
+ * 
+ * Allocates the first block of sufficient size from
+ * the free block list.
+ */
+void *
+heapalloc(size_t size)
 {
-	char *cp, *sbrk(int);
-	blkhdr_t* up;
+	blkhdr *p, *prevp = freep;
+	unsigned int nunits;
 
-	size_t size = ((nu * sizeof(blkhdr_t)) & 0xFFFFF000) + 0x1000;
+	/* compute the required number of blocks (+1 header block) */
+	nunits = 1 + (size + sizeof(blkhdr) - 1) / sizeof(blkhdr);
 
-	if(!heap_start)
-		heap_end = heap_start = ((uintptr_t)&kernel_end & 0xFFFFF000) + size;
-	if(paging_enabled())
-		identity_map(kernel_pd, heap_end, heap_end + size, 3);
-	cp = (char *)heap_end;
-	heap_end += size;
+	/* search for a big enough block */
+	for (p = prevp->ptr; p->size < nunits; prevp = p, p = p->ptr)
+	{
+		if (p != freep)
+			continue;
 
-	up = (blkhdr_t *) cp;
-	up->size = size / sizeof(blkhdr_t);
-	free((void *)(up+1));
-	return freep;
-}
-*/
-
-/* memalign: aligned storage allocator */
-void *memalign(size_t alignment, size_t size)
-{
-	return NULL;
-}
-
-/* malloc: general-purpose storage allocator */
-void* malloc(unsigned nbytes)
-{
-	blkhdr_t *p, *prevp;
-	blkhdr_t* morecore(unsigned); /* used to get another large block from OS */
-	unsigned nunits;
-	nunits = (nbytes + sizeof(blkhdr_t) - 1) / sizeof(blkhdr_t) + 1;
-	/* round up to allocate in units of sizeof(blkhdr_t) */
-	if ((prevp = freep) == NULL) { /* no free list yet */
-		base.ptr = freep = prevp = &base;
-		base.size = 0;
+		/* wrapped around free list, try
+		 * to allocate more kernel memory */
+		if ((p = heapexpand(nunits)) == NULL)
+			return NULL;
 	}
-	for (p = prevp->ptr;; prevp = p, p = p->ptr) {
-		if (p->size >= nunits) { /* big enough */
-			if (p->size == nunits) /* exactly */
-				prevp->ptr = p->ptr;
-			else { /* allocate tail end */
-				p->size -= nunits;
-				p += p->size;
-				p->size = nunits;
-			}
-			freep = prevp; /* start next search here next time */
-			return (void*)(p + 1); /* point past the blkhdr_t */
-		}
-		if (p == freep) /* wrapped around free list */
-			if ((p = morecore(nunits)) == NULL)
-				return NULL; /* none left */
+
+	/* start next search here next time */
+	freep = prevp;
+
+	/* check if block should be split */
+	if (p->size == nunits)
+	{
+		/* block matches the requested size */
+		prevp->ptr = p->ptr;
 	}
+	else
+	{
+		/* split the block and allocate tail end */
+		p->size -= nunits;
+		p += p->size;
+		p->size = nunits;
+	}
+
+	/* return memory past the block header */
+	return (void*)(p + 1);
 }
 
-/* free: put block ap in free list */
-void free(void* ap) /* keeps blocks ordered by address */
+
+/* heapfree
+ *   ptr: pointer to the memory to deallocate
+ *
+ * Puts freed block in the free block list;
+ * keeps blocks ordered by address
+ */
+void
+heapfree(void *ptr)
 {
-	blkhdr_t *bp, *p;
-	bp = (blkhdr_t*)ap - 1; /* point to block blkhdr_t */
+	blkhdr *bp, *p;
+
+	/* get to block header */
+	bp = (blkhdr*)ptr - 1;
+
+	/* find the previous block */
 	for (p = freep; !(bp > p && bp < p->ptr); p = p->ptr)
+	{
+		/* freed block at start or end of arena */
 		if (p >= p->ptr && (bp > p || bp < p->ptr))
 			break;
-	/* freed block at start or end of arena */
-	if (bp + bp->size == p->ptr) { /* join to next block */
+	}
+
+	if ((bp + bp->size) == p->ptr)
+	{
+		/* join to next block */
 		bp->size += p->ptr->size;
 		bp->ptr = p->ptr->ptr;
 	}
 	else
 		bp->ptr = p->ptr;
-	if (p + p->size == bp) { /* join to previous block */
+
+	if ((p + p->size) == bp)
+	{
+		/* join to previous block */
 		p->size += bp->size;
 		p->ptr = bp->ptr;
 	}
 	else
 		p->ptr = bp;
+
+	/* start free blocks search here next time */
 	freep = p;
 }
+

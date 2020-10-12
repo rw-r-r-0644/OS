@@ -3,8 +3,6 @@
 #include <sys/cdefs.h>
 #include <stddef.h>
 
-#include <mem/heap.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -14,8 +12,9 @@ void abort();
 
 int atoi(const char *s);
 
-// Allocation functions
-void * calloc(size_t num, size_t size); // Warning: Implemented badly, needs rewrite
+void free (void *ptr);
+void * malloc(size_t size);
+void * calloc(size_t num, size_t size);
 
 #ifdef __cplusplus
 }

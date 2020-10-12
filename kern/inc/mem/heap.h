@@ -1,13 +1,11 @@
 #pragma once
-
 #include <lib/stdint.h>
 #include <lib/stdbool.h>
 
-extern uintptr_t heap_start;
-extern uintptr_t heap_end;
+/* heapalloc: allocate memory from the kernel heap. */
+void *
+heapalloc(size_t size);
 
-/* malloc: general-purpose storage allocator */
-void* malloc(unsigned nbytes);
-
-/* free: put block ap in free list */
-void free(void* ap);
+/* heapfree: free memory to the kernel heap. */
+void
+heapfree(void *ptr);

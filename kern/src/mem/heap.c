@@ -6,7 +6,7 @@
  */
 #include <mem/heap.h>
 #include <lib/stdint.h>
-#include <lib/utils.h>
+#include <kernel/utils.h>
 #include <utils/deadlock.h>
 #include <stdio.h>
 

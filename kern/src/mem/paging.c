@@ -3,7 +3,7 @@
 #include <mem/page_frame.h>
 
 #include <utils/logger.h>
-#include <utils/utils.h>
+#include <kernel/utils.h>
 
 #include <lib/stdbool.h>
 #include <lib/stdint.h>
@@ -53,8 +53,8 @@ uint32_t* clone_pd(uint32_t* old_pd)
 
 void paging_map(uint32_t* pd, uintptr_t phys, uintptr_t virt, unsigned attrib)
 {
-/*	phys = ALIGN_DOWN(phys, 0x1000);
-	virt = ALIGN_DOWN(virt, 0x1000);
+/*	phys = _align2_down(phys, 0x1000);
+	virt = _align2_down(virt, 0x1000);
 
 	uint32_t *pde = &pd[virt >> 22]; // get pagedir entry
 
@@ -85,7 +85,7 @@ void paging_map_virt_range(uint32_t* pd, uintptr_t virt, size_t size, unsigned a
 
 void paging_unmap(uint32_t* pd, uintptr_t virt)
 {
-	virt = ALIGN_DOWN(virt, 0x1000);
+	virt = _align2_down(virt, 0x1000);
 
 	uint32_t *pde = &pd[virt >> 22]; // get pagedir entry
 	uint32_t pti = virt >> 12 & 0x03FF; // get pagetable index

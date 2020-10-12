@@ -1,5 +1,5 @@
 #include <lib/stdio.h>
-#include <lib/utils.h>
+#include <kernel/utils.h>
 #include <utils/deadlock.h>
 
 _noreturn void

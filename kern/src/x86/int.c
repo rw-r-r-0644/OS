@@ -1,7 +1,7 @@
 #include <x86/cpu.h>
 #include <utils/deadlock.h>
 #include <utils/logger.h>
-#include <utils.h>
+#include <kernel/utils.h>
 #include <stdint.h>
 #include <string.h>
 

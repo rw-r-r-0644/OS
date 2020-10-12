@@ -2,7 +2,7 @@
 #include <x86/cpu.h>
 #include <lib/stdint.h>
 #include <lib/string.h>
-#include <utils/utils.h>
+#include <kernel/utils.h>
 #include <mem/mem.h>
 
 #define TTY_COLS 80				// VGA default text mode cols

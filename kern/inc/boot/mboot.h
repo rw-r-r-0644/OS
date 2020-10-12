@@ -22,7 +22,7 @@
 #pragma once
 
 #include <lib/stdint.h>
-#include <lib/utils.h>
+#include <kernel/utils.h>
 
 #define MULTIBOOT_SEARCH					8192			// How many bytes from the start of the file we search for the header.
 #define MULTIBOOT_HEADER_MAGIC				0x1BADB002		// The magic field should contain this.

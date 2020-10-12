@@ -9,7 +9,7 @@
 #include <lib/string.h>
 #include <lib/stdint.h>
 #include <lib/stdlib.h>
-#include <lib/utils.h>
+#include <kernel/utils.h>
 
 #include <utils/logger.h>
 

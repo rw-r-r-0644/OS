@@ -1,5 +1,4 @@
 #include <mem/paging.h>
-#include <mem/kmalloc.h>
 #include <mem/heap.h>
 #include <mem/page_frame.h>
 
@@ -54,7 +53,7 @@ uint32_t* clone_pd(uint32_t* old_pd)
 
 void paging_map(uint32_t* pd, uintptr_t phys, uintptr_t virt, unsigned attrib)
 {
-	phys = ALIGN_DOWN(phys, 0x1000);
+/*	phys = ALIGN_DOWN(phys, 0x1000);
 	virt = ALIGN_DOWN(virt, 0x1000);
 
 	uint32_t *pde = &pd[virt >> 22]; // get pagedir entry
@@ -69,7 +68,7 @@ void paging_map(uint32_t* pd, uintptr_t phys, uintptr_t virt, unsigned attrib)
 	if (*pte & 0x1)	// page already present
 		log_warning("remapping existing page %08X", virt);
  	
-	*pte = (phys & 0xFFFFF000) | (attrib & 0xFFF) | 0x01; // map the page
+	*pte = (phys & 0xFFFFF000) | (attrib & 0xFFF) | 0x01; // map the page*/
 }
 
 void paging_map_range(uint32_t* pd, uintptr_t phys, uintptr_t virt, size_t size, unsigned attrib)
@@ -119,7 +118,7 @@ bool paging_enabled()
 	asm volatile("mov %%cr0, %0": "=r"(cr0));
 	return !!(cr0 & 0x80000000);
 }
-
+/*
 void paging_init()
 {	
 	// Create kernel's page directory
@@ -128,3 +127,4 @@ void paging_init()
 	// Switch to kernel's page directory
 	switch_pd(kernel_pd);
 }
+*/

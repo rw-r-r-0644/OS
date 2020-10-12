@@ -1,4 +1,3 @@
-#include <mem/kmalloc.h>
 #include <mem/page_frame.h>
 #include <mem/heap.h>
 #include <mem/kernel.h>
@@ -6,6 +5,7 @@
 #include <boot/mboot.h>
 
 #include <lib/stdint.h>
+#include <lib/stdlib.h>
 #include <lib/string.h>
 
 #include <utils/logger.h>
@@ -66,8 +66,7 @@ void pageframe_init(uint32_t mem_size)
 	
 	frame_size = mem_size / 4;     /* 4k blocks */
 	log_warning("Allocating %u bytes of memory", frame_size / 8);
-	frame_mem  = kcalloc(frame_size / 8, false);
-	memset(frame_mem, 0, frame_size / 8);
+	frame_mem  = calloc(frame_size / 8, 1);
 	
 	log_debug("frame_size = %u, frame = 0x%08x", frame_size, frame_mem);
 	

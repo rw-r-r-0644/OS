@@ -30,16 +30,47 @@ static blkhdr base = { &base, 0 };
 static blkhdr *freep = &base;
 
 
+/* preallocated boot heap */
+extern blkhdr
+__bootheap_start[],
+__bootheap_end[];
+
+int
+__bootheap_used = 0;
+
+
+
 /* heapexpand
  *   nu: the number of heap blocks to allocate
  *
  * Allocates more virtual kernel memory for the heap.
+ * Before vmm initialization, a preallocated boot heap
+ * area is used instead.
+ * 
+ * TODO: implement vmm heap allocation
  */
 static blkhdr *
 heapexpand(unsigned int nu)
 {
-	printf("heapexpand: error: unimplemented.\n");
-	deadlock();
+	blkhdr *up;
+
+	if (&__bootheap_start[__bootheap_used + nu] <= __bootheap_end)
+	{
+		/* allocate the new blocks from boot heap */
+		up = &__bootheap_start[__bootheap_used];
+		up->size = nu;
+
+		/* increment used boot heap */
+		__bootheap_used += nu;
+	}
+	else
+	{
+		printf("heapexpand: error: out of boot memory.\n");
+		deadlock();
+	}
+
+	heapfree(up + 1);
+	return freep;
 }
 
 

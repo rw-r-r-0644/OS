@@ -5,6 +5,8 @@ OUTPUT_FORMAT(elf32-i386)
  * address space, which will be mapped to 1MB in the
  * physical address space. */
 
+__bootheap_size = 0x40000;
+
 SECTIONS
 {
 	. = 0xC0100000;
@@ -26,6 +28,13 @@ SECTIONS
 	{
 		*(COMMON)
 		*(.bss)
+	}
+
+	.heap ALIGN(4K) : AT(ADDR(.heap) - 0xC0000000)
+	{
+		__bootheap_start = .;
+		. = . + __bootheap_size;
+		__bootheap_end = .;
 	}
 
 	__kernel_end = .;

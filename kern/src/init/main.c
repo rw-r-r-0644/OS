@@ -12,10 +12,8 @@
 
 #include <x86/cpu.h>
 
-#include <mem/kmalloc.h>
 #include <mem/paging.h>
 #include <mem/page_frame.h>
-#include <mem/heap.h>
 
 #include <boot/mboot.h>
 
@@ -57,12 +55,6 @@ void user_input(char *input)
 	{
 		puts("Stopping the cpu...\n");
 		hlt();
-	}
-	else if(!strcmp(input, "page"))
-	{
-		uint32_t* page = kmalloc(0x1000, true);
-		printf("Allocated a page\n");
-		printf("Page: %08x\n", page);
 	}
 	else if(!strcmp(input, "lspci"))
 	{

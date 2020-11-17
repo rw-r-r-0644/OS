@@ -34,12 +34,12 @@ int atoi (const char * s)
 
 void * malloc(size_t size)
 {
-	return heapalloc(size);
+	return kmalloc(size);
 }
 
 void free(void *ptr)
 {
-	return heapfree(ptr);
+	return kfree(ptr);
 }
 
 void * calloc(size_t num, size_t size)

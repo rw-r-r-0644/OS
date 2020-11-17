@@ -4,8 +4,8 @@
 
 /* heapalloc: allocate memory from the kernel heap. */
 void *
-heapalloc(size_t size);
+kmalloc(size_t size);
 
 /* heapfree: free memory to the kernel heap. */
 void
-heapfree(void *ptr);
+kfree(void *ptr);

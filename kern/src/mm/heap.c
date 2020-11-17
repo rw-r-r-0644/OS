@@ -40,7 +40,7 @@ __bootheap_used = 0;
 
 
 
-/* heapexpand
+/* kheapexpand
  *   nu: the number of heap blocks to allocate
  *
  * Allocates more virtual kernel memory for the heap.
@@ -50,7 +50,7 @@ __bootheap_used = 0;
  * TODO: implement vmm heap allocation
  */
 static blkhdr *
-heapexpand(unsigned int nu)
+kheapexpand(unsigned int nu)
 {
 	blkhdr *up;
 
@@ -65,23 +65,23 @@ heapexpand(unsigned int nu)
 	}
 	else
 	{
-		printf("heapexpand: error: out of boot memory.\n");
+		printf("kheapexpand: error: out of boot memory.\n");
 		deadlock();
 	}
 
-	heapfree(up + 1);
+	kfree(up + 1);
 	return freep;
 }
 
 
-/* heapalloc
+/* kmalloc
  *   size: the amount of memory to allocate
  * 
  * Allocates the first block of sufficient size from
  * the free block list.
  */
 void *
-heapalloc(size_t size)
+kmalloc(size_t size)
 {
 	blkhdr *p, *prevp = freep;
 	unsigned int nunits;
@@ -97,7 +97,7 @@ heapalloc(size_t size)
 
 		/* wrapped around free list, try
 		 * to allocate more kernel memory */
-		if ((p = heapexpand(nunits)) == NULL)
+		if ((p = kheapexpand(nunits)) == NULL)
 			return NULL;
 	}
 
@@ -123,14 +123,14 @@ heapalloc(size_t size)
 }
 
 
-/* heapfree
+/* kfree
  *   ptr: pointer to the memory to deallocate
  *
  * Puts freed block in the free block list;
  * keeps blocks ordered by address
  */
 void
-heapfree(void *ptr)
+kfree(void *ptr)
 {
 	blkhdr *bp, *p;
 

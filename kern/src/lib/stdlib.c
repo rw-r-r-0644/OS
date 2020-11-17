@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <string.h>
-#include <mem/heap.h>
+#include <mm/heap.h>
 
 __attribute__((noreturn))
 void abort()

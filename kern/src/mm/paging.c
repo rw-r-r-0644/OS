@@ -1,6 +1,6 @@
-#include <mem/paging.h>
-#include <mem/heap.h>
-#include <mem/page_frame.h>
+#include <mm/paging.h>
+#include <mm/heap.h>
+#include <mm/page_frame.h>
 
 #include <utils/logger.h>
 #include <kernel/utils.h>

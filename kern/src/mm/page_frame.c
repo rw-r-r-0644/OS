@@ -1,6 +1,6 @@
-#include <mem/page_frame.h>
-#include <mem/heap.h>
-#include <mem/kernel.h>
+#include <mm/page_frame.h>
+#include <mm/heap.h>
+#include <mm/kernel.h>
 
 #include <lib/stdint.h>
 #include <lib/stdlib.h>

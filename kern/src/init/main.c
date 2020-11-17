@@ -12,8 +12,8 @@
 
 #include <x86/cpu.h>
 
-#include <mem/paging.h>
-#include <mem/page_frame.h>
+#include <mm/paging.h>
+#include <mm/page_frame.h>
 
 #include <fs/fs.h>
 #include <fs/initrd.h>

@@ -4,7 +4,7 @@
  * Kernel memory heap.
  * Based on the K&R heap implementation.
  */
-#include <mem/heap.h>
+#include <mm/heap.h>
 #include <lib/stdint.h>
 #include <kernel/utils.h>
 #include <utils/deadlock.h>

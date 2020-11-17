@@ -3,7 +3,7 @@
 #include <lib/stdint.h>
 #include <lib/string.h>
 #include <kernel/utils.h>
-#include <mem/mem.h>
+#include <mm/mem.h>
 
 #define TTY_COLS 80				// VGA default text mode cols
 #define TTY_ROWS 25				// VGA default text mode rows

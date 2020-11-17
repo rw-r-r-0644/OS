@@ -17,14 +17,14 @@ typedef struct
 {
 	char magic[8];
 	uint32_t entry_count;
-} _packed initrd_header_t;
+} _PACKED initrd_header_t;
 
 typedef struct
 {
 	char name[128];
 	uint32_t  offset;
 	uint32_t  length;
-} _packed initrd_file_desc_t;
+} _PACKED initrd_file_desc_t;
 
 initrd_header_t * initrd_header;	// Initrd header
 initrd_file_desc_t * initrd_descs;	// Initrd descriptors array

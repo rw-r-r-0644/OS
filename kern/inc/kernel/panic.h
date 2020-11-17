@@ -1,5 +1,5 @@
 #pragma once
 #include <kernel/utils.h>
 
-_noreturn void
+_NORETURN void
 panic(char *msg); 

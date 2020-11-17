@@ -4,7 +4,7 @@
 #include <string.h>
 #include <mem/heap.h>
 
-__attribute__((__noreturn__))
+__attribute__((noreturn))
 void abort()
 {
 	printf("KERNEL PANIC: abort();\n");

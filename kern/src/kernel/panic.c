@@ -2,7 +2,7 @@
 #include <kernel/utils.h>
 #include <utils/deadlock.h>
 
-_noreturn void
+_NORETURN void
 panic(char *msg)
 {
 	printf("*** Kernel panic: %s\n", msg);

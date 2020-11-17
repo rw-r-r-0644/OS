@@ -75,7 +75,7 @@ void enable_isrs(void)
 
 /* IDT */
 
-struct _packed
+struct _PACKED
 {
     uint16_t handl_lo;
     uint16_t segment;
@@ -84,7 +84,7 @@ struct _packed
     uint16_t handl_hi;
 } idt[256];
 
-struct _packed
+struct _PACKED
 {
     uint16_t limit;
     uint32_t base;

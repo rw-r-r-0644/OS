@@ -80,7 +80,7 @@ typedef struct multiboot_header
 	uint32_t width;
 	uint32_t height;
 	uint32_t depth;
-} _packed multiboot_header_t;
+} _PACKED multiboot_header_t;
 
 /* The symbol table for a.out. */
 typedef struct multiboot_aout_symbol_table
@@ -89,7 +89,7 @@ typedef struct multiboot_aout_symbol_table
 	uint32_t strsize;
 	uint32_t addr;
 	uint32_t reserved;
-} _packed multiboot_aout_symbol_table_t;
+} _PACKED multiboot_aout_symbol_table_t;
 
 /* The section header table for ELF. */
 typedef struct multiboot_elf_section_header_table
@@ -98,7 +98,7 @@ typedef struct multiboot_elf_section_header_table
 	uint32_t size;
 	uint32_t addr;
 	uint32_t shndx;
-} _packed multiboot_elf_section_header_table_t;
+} _PACKED multiboot_elf_section_header_table_t;
 
 typedef struct multiboot_mmap_entry
 {
@@ -108,7 +108,7 @@ typedef struct multiboot_mmap_entry
 #define MULTIBOOT_MEMORY_AVAILABLE				1
 #define MULTIBOOT_MEMORY_RESERVED				2
 	uint32_t type;
-} _packed multiboot_memory_map_t;
+} _PACKED multiboot_memory_map_t;
 
 typedef struct multiboot_mod_list
 {
@@ -121,7 +121,7 @@ typedef struct multiboot_mod_list
 
 	/* padding to take it to 16 bytes (must be zero) */
 	uint32_t pad;
-} _packed multiboot_module_t;
+} _PACKED multiboot_module_t;
 
 typedef struct multiboot_info
 {
@@ -172,7 +172,7 @@ typedef struct multiboot_info
 	uint16_t vbe_interface_seg;
 	uint16_t vbe_interface_off;
 	uint16_t vbe_interface_len;
-} _packed multiboot_info_t;
+} _PACKED multiboot_info_t;
 
 /* The actual pointer to multiboot informations */
 extern multiboot_info_t * mbinfo;

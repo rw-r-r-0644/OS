@@ -20,7 +20,7 @@ struct blkhdr
 
 	/* size of this block */
 	unsigned int size;
-} _packed;
+} _PACKED;
 
 
 /* initial base block */

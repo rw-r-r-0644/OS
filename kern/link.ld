@@ -5,7 +5,7 @@ OUTPUT_FORMAT(elf32-i386)
  * address space, which will be mapped to 1MB in the
  * physical address space. */
 
-__bootheap_size = 0x40000;
+__bootheap_size = 0x80000;
 
 SECTIONS
 {

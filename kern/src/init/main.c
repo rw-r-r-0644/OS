@@ -15,8 +15,6 @@
 #include <mem/paging.h>
 #include <mem/page_frame.h>
 
-#include <boot/mboot.h>
-
 #include <fs/fs.h>
 #include <fs/initrd.h>
 

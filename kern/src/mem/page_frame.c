@@ -2,8 +2,6 @@
 #include <mem/heap.h>
 #include <mem/kernel.h>
 
-#include <boot/mboot.h>
-
 #include <lib/stdint.h>
 #include <lib/stdlib.h>
 #include <lib/string.h>

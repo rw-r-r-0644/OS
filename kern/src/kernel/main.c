@@ -5,7 +5,7 @@
  *
  */
 
-#include <init/main.h>
+#include <kernel/main.h>
 #include <dev/tty.h>
 #include <dev/pci.h>
 #include <dev/dev.h>

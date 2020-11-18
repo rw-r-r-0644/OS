@@ -1,6 +1,6 @@
 #include <dev/kb.h>
 #include <x86/cpu.h>
-#include <init/main.h>
+#include <kernel/main.h>
 
 #include <utils/logger.h>
 

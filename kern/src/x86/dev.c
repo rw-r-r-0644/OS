@@ -8,11 +8,11 @@ void dev_init()
 	tty_init();
 
     // IRQ0: timer
-    //init_timer(1000);
+    init_timer(1000);
 	
     // IRQ1: keyboard
-    //init_kb();
+    init_kb();
 
     // Enable interruptions
-    //sti();
+    sti();
 }

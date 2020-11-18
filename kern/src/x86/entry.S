@@ -20,73 +20,85 @@
 
 .section .data
 	.align 4096
-	gdt_start: # GDT
+
+	# GDT table
+	gdt_start:
 		.long 0x00000000, 0x00000000    # 0x00: null segment
 		.long 0x0000FFFF, 0x00CF9A00    # 0x08: code segment
 		.long 0x0000FFFF, 0x00CF9200    # 0x10: data segment
-	gdt_desc:  # GDT decriptor
-		.word gdt_desc - gdt_start - 1      # size
-		.long gdt_start - KERNEL_VIRT_BASE  # base
+	gdt_end:
+
+	# Boot GDT decriptor (physical address)
+	gdt_boot_desc:
+		.word gdt_end - gdt_start - 1		# size
+		.long gdt_start - KERNEL_VIRT_BASE	# base
+
+	# Normal GDT descriptor
+	gdt_desc:
+		.word gdt_end - gdt_start - 1		# size
+		.long gdt_start						# base
 
 .section .text
-	# kernel entrypoint
-	.global _loader
-	_loader:
 
-	# setup GDT
-	_loader.gdt_setup:
-		lgdt gdt_desc - KERNEL_VIRT_BASE
-		ljmp $0x08, $(_loader.gdt_reload_segments - KERNEL_VIRT_BASE)
+## kernel entrypoint
+.global _loader
+_loader:
+	## setup GDT
+	lgdt gdt_boot_desc - KERNEL_VIRT_BASE
+	ljmp $0x08, $(1f - KERNEL_VIRT_BASE)
+1:	movw $0x10,%ax
+	movw %ax,%ds
+	movw %ax,%ss
+	movw %ax,%es
+	movw %ax,%fs
+	movw %ax,%gs
 
-	# reload GDT segments
-	_loader.gdt_reload_segments:
-		movw $0x10,%ax
-		movw %ax,%ds
-		movw %ax,%ss
-		movw %ax,%es
-		movw %ax,%fs
-		movw %ax,%gs
+	## setup paging
 
-	# setup paging
-	_loader.setup_paging:
-		# enable 4 Mib pages
-		movl %cr4, %ecx
-		orl $0x00000010,%ecx
-		movl %ecx, %cr4
+	# enable 4 Mib pages
+	movl %cr4, %ecx
+	orl $0x00000010,%ecx
+	movl %ecx, %cr4
 
-		# load boot page directory
-		movl $(bootpagedir - KERNEL_VIRT_BASE), %ecx
-		movl %ecx, %cr3
+	# load boot page directory
+	movl $(bootpagedir - KERNEL_VIRT_BASE), %ecx
+	movl %ecx, %cr3
 
-		# enable paging
-		movl %cr0, %ecx
-		orl $0x80000000,%ecx
-		movl %ecx, %cr0
+	# enable paging
+	movl %cr0, %ecx
+	orl $0x80000000,%ecx
+	movl %ecx, %cr0
 
-		# long jump to higher half entrypoint
-		ljmp $0x08, $_highmem_entrypoint
+	# long jump to higher half entrypoint
+	ljmp $0x08, $_highmem_entrypoint
 
-	# higher half entrypoint
-	_highmem_entrypoint:
+## higher half entrypoint
+_highmem_entrypoint:
 
-	# setup stack
-	_highmem_entrypoint.stack_setup:
-		movl $stack_base, %esp
+	## update GDT for virtual memory
+	lgdt gdt_desc
+	ljmp $0x08, $2f
+2:	movw $0x10,%ax
+	movw %ax,%ds
+	movw %ax,%ss
+	movw %ax,%es
+	movw %ax,%fs
+	movw %ax,%gs
 
-	# early kernel setup
-	_highmem_entrypoint.early_kernel:
-		# save multiboot info
-		movl %ebx, multiboot2_info_pa
+	## setup stack
+	movl $stack_base, %esp
 
-		# setup interrupts/exceptions handling
-		call idt_init
+	## save multiboot info
+	movl %ebx, multiboot2_info_pa
 
-	# start the kernel
-	_highmem_entrypoint.start_kernel:
-		call kern_main
+	## setup interrupts/exceptions handling
+	call idt_init
 
-	.global deadlock
-	deadlock:
-		cli
-		hlt
-		jmp deadlock
+	## start the kernel
+	call kern_main
+
+.global deadlock
+deadlock:
+	cli
+	hlt
+	jmp deadlock

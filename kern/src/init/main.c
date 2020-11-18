@@ -11,9 +11,11 @@
 #include <dev/dev.h>
 
 #include <x86/cpu.h>
+#include <x86/paging.h>
 
-#include <mm/paging.h>
-#include <mm/page_frame.h>
+#include <mm/mm.h>
+
+#include <boot/multiboot2.h>
 
 #include <fs/fs.h>
 #include <fs/initrd.h>
@@ -30,7 +32,7 @@
 /* kernel entrypoint */
 void kern_main()
 {
-	// Intialize devices
+	mm_init();
 	dev_init();
 
 	// Mount initial filesystem!

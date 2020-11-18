@@ -4,11 +4,15 @@
  * Kernel memory heap.
  * Based on the K&R heap implementation.
  */
+#include <mm/mm.h>
 #include <mm/heap.h>
 #include <lib/stdint.h>
 #include <kernel/utils.h>
-#include <utils/deadlock.h>
+#include <kernel/panic.h>
 #include <stdio.h>
+
+/* allocate memory for the heap in blocks of this size */
+#define HEAP_ALLOCSIZE	(PAGE_SIZE * 4)
 
 
 /* block header */
@@ -35,9 +39,12 @@ extern blkhdr
 __bootheap_start[],
 __bootheap_end[];
 
-int
+unsigned long
 __bootheap_used = 0;
 
+
+extern int
+__mm_is_init;
 
 
 /* kheapexpand
@@ -46,11 +53,9 @@ __bootheap_used = 0;
  * Allocates more virtual kernel memory for the heap.
  * Before vmm initialization, a preallocated boot heap
  * area is used instead.
- * 
- * TODO: implement vmm heap allocation
  */
 static blkhdr *
-kheapexpand(unsigned int nu)
+kheapexpand(unsigned long nu)
 {
 	blkhdr *up;
 
@@ -58,17 +63,21 @@ kheapexpand(unsigned int nu)
 	{
 		/* allocate the new blocks from boot heap */
 		up = &__bootheap_start[__bootheap_used];
-		up->size = nu;
-
-		/* increment used boot heap */
 		__bootheap_used += nu;
+	}
+	else if (!__mm_is_init)
+	{
+		panic("boot heap full, but mm not ready!");
 	}
 	else
 	{
-		printf("kheapexpand: error: out of boot memory.\n");
-		deadlock();
+		/* allocate more kernel memory */
+		if (nu < (HEAP_ALLOCSIZE / sizeof(blkhdr)))
+			nu = HEAP_ALLOCSIZE / sizeof(blkhdr);
+		up = ksbrk(nu * sizeof(blkhdr));
 	}
 
+	up->size = nu;
 	kfree(up + 1);
 	return freep;
 }
@@ -81,10 +90,10 @@ kheapexpand(unsigned int nu)
  * the free block list.
  */
 void *
-kmalloc(size_t size)
+kmalloc(unsigned long size)
 {
 	blkhdr *p, *prevp = freep;
-	unsigned int nunits;
+	unsigned long nunits;
 
 	/* compute the required number of blocks (+1 header block) */
 	nunits = 1 + (size + sizeof(blkhdr) - 1) / sizeof(blkhdr);

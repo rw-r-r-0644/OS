@@ -30,3 +30,4 @@ void tty_print_color(char *s, uint16_t color);
 void tty_putchar_color(char c, uint16_t color);
 void tty_set_color(uint16_t color);
 void tty_clear();
+void tty_init();

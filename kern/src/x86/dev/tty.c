@@ -3,16 +3,18 @@
 #include <lib/stdint.h>
 #include <lib/string.h>
 #include <kernel/utils.h>
-#include <mm/mem.h>
+#include <kernel/resources.h>
+#include <kernel/panic.h>
+#include <mm/mm.h>
 
 #define TTY_COLS 80				// VGA default text mode cols
 #define TTY_ROWS 25				// VGA default text mode rows
-#define TTY_DEFAULT_COLOR 	// Default color: white on black
 #define TTY_CTRL_REG 0x3D4
 #define TTY_DATA_REG 0x3D5
 
-uint16_t *tty_buffer = (uint16_t*)(0xB8000 + PAGE_OFFSET);
+uint16_t *tty_buffer;
 uint16_t tty_color = 0x0F00;
+static int tty_is_init = 0;
 
 // Get cursor position from vga port as two bytes (data 0xE/0xF)
 uint32_t tty_get_cursor()
@@ -36,6 +38,8 @@ void tty_set_cursor(uint32_t offset)
 // Create a char entry in the video buffer
 void tty_print_char(char c, uint16_t color)
 {
+	if (!tty_is_init)
+		return;
 	if (color == 0) // No custom color has been specified, use default
 		color = tty_color;
 	
@@ -103,4 +107,21 @@ void tty_clear()
 {
 	memset16(tty_buffer, ' ' | tty_color, TTY_COLS * TTY_ROWS);
 	tty_set_cursor(0);
+}
+
+void tty_init()
+{
+	resource *tbuf;
+
+	tbuf = iomemrequest(0xB8000, 
+		TTY_COLS * TTY_ROWS * 2,
+		"Text mode buffer"
+	);
+
+	if (!tbuf)
+		panic("tty_init: failed to claim memory");
+
+	tty_buffer = ioremap(tbuf);
+	
+	tty_is_init = 1;
 }

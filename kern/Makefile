@@ -34,6 +34,8 @@ CFLAGS		:=	-g -m32 \
 
 ASFLAGS		:=	-g -m32 $(INCLUDES)
 
+.PHONY: rebuild debug default clean
+
 # Rebuild by default
 rebuild: clean default
 

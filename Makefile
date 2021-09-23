@@ -12,6 +12,8 @@ TARGETS		:= kern initrd
 PREFIX		:= i686-elf-
 GDB			:= $(PREFIX)gdb
 
+.PHONY: rebuild default clean debug run
+
 rebuild:
 	@echo "--> Rebuilding OS"
 	@for dir in $(TARGETS); do $(MAKE) -C $$dir ROOTFS=$(abspath $(ROOTFS)) rebuild; done

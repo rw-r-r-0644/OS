@@ -9,6 +9,8 @@ HOSTCC		:= gcc
 OUT_DIR		:= build
 INITRD_DIR	:= fs
 
+.PHONY: rebuild debug default clean
+
 # Rebuild by default
 rebuild: clean default
 

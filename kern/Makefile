@@ -60,7 +60,6 @@ $(TARGET): $(OBJECTS)
 $(TARGET_DBG): $(TARGET)
 
 # Generic rules for wildcards
-# To make an object, always compile from its .c
 $(BUILD)/%.c.o: $(SOURCE)/%.c
 	$(info CC $@)
 	@$(CC) $(CFLAGS) -c $< -o $@
@@ -68,10 +67,6 @@ $(BUILD)/%.c.o: $(SOURCE)/%.c
 $(BUILD)/%.S.o: $(SOURCE)/%.S
 	$(info AS $@)
 	@$(CC) $(ASFLAGS) -c $< -o $@
-
-$(BUILD)/%.s.o: $(SOURCE)/%.s
-	$(info NASM $@)
-	@$(AS) $(ASFLAGS) $< -f elf -o $@
 
 clean:
 	$(info -> Cleaning kernel)

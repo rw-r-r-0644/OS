@@ -10,7 +10,7 @@ TARGETS		:= kern initrd
 
 # Compiler settings
 PREFIX		:= i686-elf-
-GDB			:= $(PREFIX)gdb
+GDB			:= gdb
 
 .PHONY: rebuild default clean debug run
 

@@ -1,261 +1,240 @@
+#include <limits.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <x86/tty.h>
 
-uint32_t int_to_ascii(int value, uint32_t radix, uint32_t uppercase, uint32_t unsig, char *buffer, uint32_t zero_pad)
+struct _stdio_outputfn
 {
-	char *pbuffer = buffer;
-	int	negative = 0;
-	uint32_t i, len;
+	int error;
+	size_t written;
+	size_t size;
+	void *ptr;
+	void (*outputchr)(struct _stdio_outputfn *fn, int c);
+};
 
-	/* No support for unusual radixes. */
-	if (radix > 16)
-		return 0;
-
-	if (value < 0 && !unsig) {
-		negative = 1;
-		value = -value;
+static void
+_stdio_output_buffer(struct _stdio_outputfn* fn, int c)
+{
+	if ((fn->error >= 0) && (fn->written < fn->size))
+	{
+		// TODO: set EOVERFLOW
+		char* buffer = (char *)fn->ptr;
+		buffer[fn->written] = c;
 	}
+	else
+		fn->error = 1;
+	fn->written++;
+}
 
-	/* This builds the string back to front ... */
-	do {
-		int digit = value % radix;
-		*(pbuffer++) = (digit < 10 ? '0' + digit : (uppercase ? 'A' : 'a') + digit - 10);
-		value /= radix;
-	} while (value > 0);
+static void
+_stdio_output_stdout(struct _stdio_outputfn* fn, int c)
+{
+	if ((fn->error >= 0) && (fn->written < fn->size))
+		// TODO: set EOVERFLOW
+		fn->error = (putchar(c) == EOF) ? -1 : 0;
+	fn->written++;
+}
 
-	for (i = (pbuffer - buffer); i < zero_pad; i++)
-		*(pbuffer++) = '0';
+static void
+_stdio_outputf(struct _stdio_outputfn* fn, const char* fmt, va_list va)
+{
+	while (*fmt != '\0')
+	{
+		bool isalternative = false;
+		bool islong = false;
+		unsigned long pad = 0;
+		char padchr = ' ';
 
-	if (negative)
-		*(pbuffer++) = '-';
+		// Normal text
+		while (*fmt != '%')
+		{
+			fn->outputchr(fn, *(fmt++));
+			if (*fmt == '\0')
+				return;
+		}
 
-	*(pbuffer) = '\0';
+		const char* fmt_start = fmt++;
 
-	/* ... now we reverse it (could do it recursively but will
-	 * conserve the stack space) */
-	len = (pbuffer - buffer);
-	for (i = 0; i < len / 2; i++) {
-		char j = buffer[i];
-		buffer[i] = buffer[len-i-1];
-		buffer[len-i-1] = j;
+		// Handle alternative form
+		if (*fmt == '#')
+		{
+			isalternative = true;
+			fmt++;
+		}
+
+		// Handle zero pad
+		if (*fmt == '0')
+		{
+			padchr = '0';
+			fmt++;
+		}
+
+		// Handle pad length
+		while ((*fmt >= '0') && (*fmt <= '9'))
+		{
+			pad *= 10;
+			pad += (*fmt - '0');
+			fmt++;
+		}
+
+		// Handle long specifier
+		if (*fmt == 'l')
+		{
+			islong = true;
+			fmt++;
+		}
+
+		// Format specifiers
+		switch (*fmt)
+		{
+			case '\0': return;
+			case '%':
+			{
+				fn->outputchr(fn, '%');
+				break;
+			}
+			case 's':
+			{
+				const char* s = va_arg(va, const char*);
+				while(*s)
+					fn->outputchr(fn, *(s++));
+				break;
+			}
+			case 'c':
+			{
+				char c = (char)va_arg(va, int);
+				fn->outputchr(fn, c);
+				break;
+			}
+			case 'n':
+			{
+				int* n = va_arg(va, int*);
+				*n = (int)fn->written;
+				break;
+			}
+			case 'd': // fallthrough
+			case 'i': // fallthrough
+			case 'u': // fallthrough
+			case 'o': // fallthrough
+			case 'x': // fallthrough
+			case 'X':
+			{
+				unsigned long base = 10, num = 0, len = 0, div = 0;
+
+				char* digits = (*fmt == 'X')
+					? "0123456789ABCDEF"
+					: "0123456789abcdef";
+
+				if ((*fmt == 'd') || (*fmt == 'i'))
+				{
+					long inum = (islong)
+						? (long)va_arg(va, long)
+						: (long)va_arg(va, int);
+
+					if (inum < 0)
+					{
+						fn->outputchr(fn, '-');
+						inum = -inum;
+						len++;
+					}
+
+					num = (unsigned long)inum;
+				}
+				else
+				{
+					num = (islong)
+						? (unsigned long)va_arg(va, unsigned long)
+						: (unsigned long)va_arg(va, unsigned int);
+
+					if (*fmt == 'x' || *fmt == 'X')
+					{
+						if (isalternative)
+						{
+							fn->outputchr(fn, '0');
+							fn->outputchr(fn, *fmt);
+							len += 2;
+						}
+						base = 16;
+					} else if (*fmt == 'o')
+					{
+						if (isalternative)
+						{
+							fn->outputchr(fn, '0');
+							len++;
+						}
+						base = 8;
+					}
+				}
+
+				for (unsigned long d = 1; (d <= num) && (d >= div); d *= base)
+				{
+					div = d;
+					len++;
+				}
+
+				for (unsigned long i = len; i < pad; i++)
+					fn->outputchr(fn, padchr);
+
+				while (div >= 1)
+				{
+					fn->outputchr(fn, digits[(num / div) % base]);
+					div /= base;
+				}
+				break;
+			}
+			default:
+			{
+				for (const char* s = fmt_start; s <= fmt; s++)
+					fn->outputchr(fn, *s);
+				break;
+			}
+		}
+		fmt++;
 	}
-
-	return len;
+	fn->outputchr(fn, '\0');
 }
 
-char * itoa(int value, char * str, int base)
+int
+printf(const char* restrict fmt, ...)
 {
-	int_to_ascii(value, base, 0, 0, str, 0);
-	return str;
-}
-
-void printf(const char *fmt, ...)
-{
-	va_list va;
-	va_start(va,fmt);
-	vprintf(fmt, va);
-	va_end(va);
-}
-
-int putchar(int c)
-{
-	tty_putchar (c);
-	return c;
-}
-
-int puts(char* s)
-{
-	tty_print(s);
-	return 1;
-}
-
-int snprintf(char* buffer, uint32_t buffer_len, const char *fmt, ...)
-{
-	int ret;
+	struct _stdio_outputfn stdout_fn = {0, 0, INT_MAX, NULL, &_stdio_output_stdout};
 	va_list va;
 	va_start(va, fmt);
-	ret = vsnprintf(buffer, buffer_len, fmt, va);
+	_stdio_outputf(&stdout_fn, fmt, va);
 	va_end(va);
-
-	return ret;
+	return (stdout_fn.error < 0) ? -1 : (int)stdout_fn.written;
 }
 
-
-int vprintf(const char *fmt, va_list va)
+int
+putchar(int ic)
 {
-	uint32_t len = 0;
-	
-	char bf[40];
-	char ch;
-
-	while ((ch = *(fmt++)))
-	{
-		if (ch != '%')
-		{
-			len++;
-			putchar(ch);
-		}
-		else
-		{
-			char zero_pad = 0;
-			char *ptr;
-
-			ch = *(fmt++);
-
-			if(ch == '0') // Zero padding
-			{
-				ch = *(fmt++);
-				if(ch == '\0')
-					goto end;
-				if(ch >= '0' && ch <= '9')
-					zero_pad = ch - '0';
-				ch = *(fmt++);
-			}
-
-			if (ch == 'l' && (*(fmt) == 'u' || *(fmt) == 'd'))
-				ch = *(fmt++);
-			
-			switch(ch)
-			{
-				case 0:
-					goto end;
-
-				case 'u':
-				case 'd':
-					len += int_to_ascii(va_arg(va, uint32_t), 10, 0, (ch == 'u'), bf, zero_pad);
-					puts(bf);
-					break;
-
-				case 'p':
-				case 'x':
-				case 'X':
-					len += int_to_ascii(va_arg(va, uint32_t), 16, (ch == 'X'), 1, bf, zero_pad);
-					puts(bf);
-					break;
-
-				case 'c' :
-					len++;
-					putchar((char)(va_arg(va, int)));
-					break;
-
-				case 's' :
-					ptr = va_arg(va, char*);
-					len += strlen(ptr);
-					puts(ptr);
-					break;
-
-				default:
-					len++;
-					putchar(ch);
-					break;
-			}
-		}
-	}
-end:
-	return len;
+	tty_putchar(ic);
+	return ic;
 }
 
-
-/*
- * Based on mini vsnprintf
- * Probably needs more checks
-*/
-
-int vsnprintf(char *buffer, uint32_t buffer_len, const char *fmt, va_list va)
+int
+puts(const char* string)
 {
-	char *pbuffer = buffer;
-	char bf[40];
-	char ch;
+	return printf("%s\n", string);
+}
 
-	int append_char(char ch)
-	{
-		if ((uint32_t)((pbuffer - buffer) + 1) >= buffer_len)
-			return 0;
-		*(pbuffer++) = ch;
-		*(pbuffer) = '\0';
-		return 1;
-	}
+int
+snprintf(char* s, size_t n, const char* restrict fmt, ...)
+{
+	struct _stdio_outputfn buffer_out = {0, 0, n-1, s, &_stdio_output_buffer};
+	va_list va;
+	va_start(va, fmt);
+	_stdio_outputf(&buffer_out, fmt, va);
+	s[n-1] = '\0';
+	va_end(va);
+	return (buffer_out.error < 0) ? -1 : (int)buffer_out.written;
+}
 
-	int append_string(char *s, uint32_t len)
-	{
-		uint32_t i;
-
-		if (buffer_len - (pbuffer - buffer) - 1 < len)
-			len = buffer_len - (pbuffer - buffer) - 1;
-
-		/* Copy to buffer */
-		for (i = 0; i < len; i++)
-			*(pbuffer++) = s[i];
-		*(pbuffer) = '\0';
-
-		return len;
-	}
-
-	while ((ch = *(fmt++)))
-	{
-		if ((uint32_t)((pbuffer - buffer) + 1) >= buffer_len)
-			break;
-		
-		if (ch!='%')
-		{
-			append_char(ch);
-		}
-		else
-		{
-			char zero_pad = 0;
-			char *ptr;
-			uint32_t len;
-
-			ch = *(fmt++);
-
-			if(ch == '0') // Zero padding
-			{
-				ch = *(fmt++);
-				if(ch == '\0')
-					goto end;
-				if(ch >= '0' && ch <= '9')
-					zero_pad = ch - '0';
-				ch = *(fmt++);
-			}
-
-			if (ch == 'l' && (*(fmt) == 'u' || *(fmt) == 'd'))
-				ch = *(fmt++);
-			
-			switch(ch)
-			{
-				case 0:
-					goto end;
-
-				case 'u':
-				case 'd':
-					len = int_to_ascii(va_arg(va, uint32_t), 10, 0, (ch == 'u'), bf, zero_pad);
-					append_string(bf, len);
-					break;
-
-				case 'p':
-				case 'x':
-				case 'X':
-					len = int_to_ascii(va_arg(va, uint32_t), 16, (ch == 'X'), 1, bf, zero_pad);
-					append_string(bf, len);
-					break;
-
-				case 'c' :
-					append_char((char)(va_arg(va, int)));
-					break;
-
-				case 's' :
-					ptr = va_arg(va, char*);
-					append_string(ptr, strlen(ptr));
-					break;
-
-				default:
-					append_char(ch);
-					break;
-			}
-		}
-	}
-end:
-	return pbuffer - buffer;
+int
+vprintf(const char* restrict fmt, va_list va)
+{
+	struct _stdio_outputfn stdout_fn = {0, 0, INT_MAX, NULL, &_stdio_output_stdout};
+	_stdio_outputf(&stdout_fn, fmt, va);
+	return (stdout_fn.error < 0) ? -1 : (int)stdout_fn.written;
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <sys/cdefs.h>
-#include <stdint.h>
 #include <stdarg.h>
 #include <string.h>
 
@@ -11,19 +10,11 @@
 extern "C" {
 #endif
 
-int vsnprintf(char *buffer, uint32_t buffer_len, const char *fmt, va_list va);
-int snprintf(char* buffer, uint32_t buffer_len, const char *fmt, ...);
-
-int vprintf(const char *fmt, va_list va);
-void printf(const char *fmt, ...);
-
-int putchar (int c);
-int puts (char *s);
-
-char * itoa(int value, char * str, int base);
-
- // (internal functions)
-uint32_t int_to_ascii(int value, uint32_t radix, uint32_t uppercase, uint32_t unsig, char *buffer, uint32_t zero_pad);
+int printf(const char* __restrict, ...);
+int putchar(int);
+int puts(const char*);
+int snprintf(char*, size_t, const char* __restrict, ...);
+int vprintf(const char* __restrict, va_list);
 
 #ifdef __cplusplus
 }

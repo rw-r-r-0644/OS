@@ -7,7 +7,6 @@
 
 #include <kernel/main.h>
 #include <dev/tty.h>
-#include <dev/pci.h>
 #include <dev/dev.h>
 
 #include <x86/cpu.h>
@@ -55,10 +54,6 @@ void user_input(char *input)
 	{
 		puts("Stopping the cpu...\n");
 		hlt();
-	}
-	else if(!strcmp(input, "lspci"))
-	{
-		pci_check_all_busses();
 	}
 	else if(!strcmp(input, "info"))
 	{

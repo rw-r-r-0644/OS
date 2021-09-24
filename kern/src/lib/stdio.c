@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
-#include <dev/tty.h>
+#include <x86/tty.h>
 
 uint32_t int_to_ascii(int value, uint32_t radix, uint32_t uppercase, uint32_t unsig, char *buffer, uint32_t zero_pad)
 {

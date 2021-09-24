@@ -92,7 +92,7 @@ _highmem_entrypoint:
 	movl %ebx, multiboot2_info_pa
 
 	## setup interrupts/exceptions handling
-	call idt_init
+	call interrupt_setup
 
 	## start the kernel
 	call kern_main

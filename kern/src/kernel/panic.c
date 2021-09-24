@@ -1,6 +1,6 @@
-#include <lib/stdio.h>
+#include <stdio.h>
+#include <kernel/panic.h>
 #include <kernel/utils.h>
-#include <utils/deadlock.h>
 
 _NORETURN void
 panic(char *msg)

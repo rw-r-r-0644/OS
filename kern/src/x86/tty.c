@@ -1,5 +1,5 @@
-#include <dev/tty.h>
-#include <x86/cpu.h>
+#include <x86/tty.h>
+#include <asm/io.h>
 #include <lib/stdint.h>
 #include <lib/string.h>
 #include <kernel/utils.h>
